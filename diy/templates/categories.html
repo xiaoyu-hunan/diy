@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}分类 - 化妆品DIY配方库{% endblock %}
+
+{% block content %}
+<!-- 分类标题 -->
+<div class="text-center mb-5">
+    <h1><i class="fas fa-th-large me-3"></i>产品分类</h1>
+    <p class="lead text-muted">按类别浏览我们的DIY配方库</p>
+</div>
+
+<!-- 分类网格 -->
+<div class="row">
+    {% for category in categories %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 category-card">
+            <div class="card-body text-center">
+                <div class="category-icon mb-3">
+                    {% if category.name == '护肤品' %}
+                    <i class="fas fa-leaf fa-3x text-success"></i>
+                    {% elif category.name == '面膜' %}
+                    <i class="fas fa-spa fa-3x text-info"></i>
+                    {% elif category.name == '护发产品' %}
+                    <i class="fas fa-cut fa-3x text-warning"></i>
+                    {% elif category.name == '精油' %}
+                    <i class="fas fa-seedling fa-3x text-primary"></i>
+                    {% else %}
+                    <i class="fas fa-vial fa-3x text-secondary"></i>
+                    {% endif %}
+                </div>
+                <h4 class="card-title">{{ category.name }}</h4>
+                <p class="card-text text-muted">
+                    {{ category.count }} 个配方
+                </p>
+                <a href="{{ url_for('category_products', category=category.name) }}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-eye me-2"></i>查看配方
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分类说明 -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-info-circle me-2"></i>分类说明</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-leaf fa-2x text-success me-3"></i>
+                            <div>
+                                <h6 class="mb-1">护肤品</h6>
+                                <small class="text-muted">面霜、精华液、乳液等面部护理产品</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-spa fa-2x text-info me-3"></i>
+                            <div>
+                                <h6 class="mb-1">面膜</h6>
+                                <small class="text-muted">各种功效的面膜配方，清洁、保湿、美白等</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-cut fa-2x text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-1">护发产品</h6>
+                                <small class="text-muted">洗发水、护发素、发膜等头发护理产品</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-seedling fa-2x text-primary me-3"></i>
+                            <div>
+                                <h6 class="mb-1">精油</h6>
+                                <small class="text-muted">各种植物精油的配方和使用方法</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-vial fa-2x text-secondary me-3"></i>
+                            <div>
+                                <h6 class="mb-1">其他</h6>
+                                <small class="text-muted">其他类型的DIY化妆品配方</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速统计 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ categories|sum(attribute='count') }}</h3>
+                        <p class="mb-0">总配方数</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ categories|length }}</h3>
+                        <p class="mb-0">分类数量</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">100%</h3>
+                        <p class="mb-0">天然成分</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">24/7</h3>
+                        <p class="mb-0">在线访问</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 分类卡片悬停效果
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryCards = document.querySelectorAll('.category-card');
+    
+    categoryCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+
+<style>
+.category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.category-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.category-icon {
+    transition: transform 0.3s ease;
+}
+
+.category-card:hover .category-icon {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

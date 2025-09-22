@@ -1,0 +1,747 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - 化妆品DIY配方库{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('index') }}">
+                <i class="fas fa-home me-1"></i>首页
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('category_products', category=product.category) }}">
+                <i class="fas fa-tag me-1"></i>{{ product.category }}
+            </a>
+        </li>
+        <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- 产品基本信息 -->
+    <div class="col-lg-8">
+        <!-- 产品头部信息 -->
+        <div class="product-header-card mb-4">
+            <div class="product-header-content">
+                <div class="product-title-section">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="product-title">
+                            <i class="fas fa-vial me-2"></i>{{ product.name }}
+                        </h1>
+                        <div class="product-actions-header">
+                            <button class="btn btn-outline-primary btn-sm" onclick="shareProduct()">
+                                <i class="fas fa-share-alt me-1"></i>分享
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="toggleFavorite()">
+                                <i class="far fa-heart me-1"></i>收藏
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-category">
+                        <span class="category-badge">{{ product.category }}</span>
+                    </div>
+                </div>
+                
+                {% if product.description %}
+                <div class="product-description-section">
+                    <p class="product-description lead">{{ product.description }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- 功效展示 -->
+                {% if product.benefits %}
+                <div class="product-benefits-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-star me-2"></i>产品功效
+                    </h4>
+                    <div class="benefits-grid">
+                        {% for benefit in product.benefits %}
+                        <div class="benefit-card">
+                            <div class="benefit-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h6 class="benefit-name">{{ benefit.name }}</h6>
+                                {% if benefit.description %}
+                                <p class="benefit-description">{{ benefit.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 原料配方 -->
+        {% if product.ingredients %}
+        <div class="ingredients-card mb-4">
+            <div class="card-header">
+                <h4 class="section-title">
+                    <i class="fas fa-leaf me-2"></i>原料配方
+                </h4>
+                <div class="ingredients-summary">
+                    <span class="badge bg-success">{{ product.ingredients|length }} 种原料</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="ingredients-grid">
+                    {% for ingredient in product.ingredients %}
+                    <div class="ingredient-card">
+                        <div class="ingredient-header">
+                            <h6 class="ingredient-name">{{ ingredient.name }}</h6>
+                            {% if ingredient.phase %}
+                            <span class="ingredient-phase">{{ ingredient.phase }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ingredient-details">
+                            <div class="ingredient-amount">
+                                <span class="amount-value">{{ ingredient.amount }}</span>
+                                {% if ingredient.unit %}
+                                <span class="amount-unit">{{ ingredient.unit }}</span>
+                                {% endif %}
+                            </div>
+                            {% if ingredient.percentage %}
+                            <div class="ingredient-percentage">
+                                {{ "%.1f"|format(ingredient.percentage) }}%
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="ingredient-progress">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ ingredient.percentage or 0 }}%"
+                                     aria-valuenow="{{ ingredient.percentage or 0 }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 制作步骤 -->
+        {% if product.steps %}
+        <div class="steps-card mb-4">
+            <div class="card-header">
+                <h4 class="section-title">
+                    <i class="fas fa-cogs me-2"></i>制作步骤
+                </h4>
+                <div class="steps-summary">
+                    <span class="badge bg-info">{{ product.steps|length }} 个步骤</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="steps-timeline">
+                    {% for step in product.steps %}
+                    <div class="step-item">
+                        <div class="step-number">{{ step.step_number }}</div>
+                        <div class="step-content">
+                            <div class="step-description">
+                                <p>{{ step.description }}</p>
+                            </div>
+                            
+                            {% if step.temperature or step.mixing_time %}
+                            <div class="step-details">
+                                {% if step.temperature %}
+                                <div class="step-detail">
+                                    <i class="fas fa-thermometer-half text-danger"></i>
+                                    <span>温度: {{ step.temperature }}</span>
+                                </div>
+                                {% endif %}
+                                {% if step.mixing_time %}
+                                <div class="step-detail">
+                                    <i class="fas fa-clock text-primary"></i>
+                                    <span>时间: {{ step.mixing_time }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if step.notes %}
+                            <div class="step-notes">
+                                <div class="alert alert-warning alert-sm">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {{ step.notes }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="col-lg-4">
+        <!-- 使用方法 -->
+        {% if product.usage %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-hand-holding-heart me-2"></i>使用方法</h5>
+            </div>
+            <div class="card-body">
+                {% for usage in product.usage %}
+                <div class="mb-3">
+                    <h6><i class="fas fa-list-ol me-1"></i>使用步骤</h6>
+                    <p>{{ usage.instruction }}</p>
+                    
+                    {% if usage.frequency %}
+                    <h6><i class="fas fa-calendar me-1"></i>使用频率</h6>
+                    <p class="text-muted">{{ usage.frequency }}</p>
+                    {% endif %}
+                    
+                    {% if usage.precautions %}
+                    <h6><i class="fas fa-exclamation-triangle me-1"></i>注意事项</h6>
+                    <p class="text-warning">{{ usage.precautions }}</p>
+                    {% endif %}
+                    
+                    {% if usage.storage_conditions %}
+                    <h6><i class="fas fa-box me-1"></i>储存条件</h6>
+                    <p class="text-info">{{ usage.storage_conditions }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 相关产品 -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-link me-2"></i>相关产品</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">更多{{ product.category }}配方正在开发中...</p>
+                <a href="{{ url_for('category_products', category=product.category) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-th-large me-1"></i>查看所有{{ product.category }}
+                </a>
+            </div>
+        </div>
+
+        <!-- 分享按钮 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-share-alt me-2"></i>分享配方</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="copyToClipboard()">
+                        <i class="fas fa-copy me-2"></i>复制链接
+                    </button>
+                    <button class="btn btn-outline-success" onclick="printPage()">
+                        <i class="fas fa-print me-2"></i>打印配方
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 返回按钮 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>返回首页
+        </a>
+        <a href="{{ url_for('category_products', category=product.category) }}" class="btn btn-outline-primary">
+            <i class="fas fa-list me-2"></i>查看同类产品
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 产品详情页面功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化页面动画
+    animateElements();
+    
+    // 添加滚动监听
+    window.addEventListener('scroll', handleScroll);
+});
+
+function shareProduct() {
+    const url = window.location.href;
+    const title = document.querySelector('.product-title').textContent;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: '查看这个有趣的DIY配方！',
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('链接已复制到剪贴板！');
+        });
+    }
+}
+
+function toggleFavorite() {
+    const favoriteBtn = document.querySelector('.btn-outline-danger');
+    const icon = favoriteBtn.querySelector('i');
+    
+    if (icon.classList.contains('far')) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        favoriteBtn.classList.remove('btn-outline-danger');
+        favoriteBtn.classList.add('btn-danger');
+        showToast('已添加到收藏');
+    } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        favoriteBtn.classList.remove('btn-danger');
+        favoriteBtn.classList.add('btn-outline-danger');
+        showToast('已取消收藏');
+    }
+}
+
+function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('链接已复制到剪贴板！');
+    });
+}
+
+function printPage() {
+    window.print();
+}
+
+function animateElements() {
+    // 为元素添加进入动画
+    const elements = document.querySelectorAll('.product-header-card, .ingredients-card, .steps-card');
+    elements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            element.style.transition = 'all 0.6s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+}
+
+function handleScroll() {
+    // 添加滚动时的视觉效果
+    const scrollTop = window.pageYOffset;
+    const elements = document.querySelectorAll('.ingredient-card, .step-item');
+    
+    elements.forEach((element, index) => {
+        const elementTop = element.offsetTop;
+        const elementHeight = element.offsetHeight;
+        const windowHeight = window.innerHeight;
+        
+        if (scrollTop + windowHeight > elementTop + elementHeight / 2) {
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }
+    });
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 2000);
+}
+
+// 打印样式优化
+window.addEventListener('beforeprint', function() {
+    document.body.classList.add('printing');
+});
+
+window.addEventListener('afterprint', function() {
+    document.body.classList.remove('printing');
+});
+</script>
+
+<style>
+/* 产品详情页面特定样式 */
+.product-header-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 1.5rem;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.product-header-content {
+    padding: 2rem;
+}
+
+.product-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0;
+}
+
+.product-actions-header {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.product-description-section {
+    margin: 1.5rem 0;
+}
+
+.product-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+/* 功效展示样式 */
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.benefit-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.benefit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.benefit-icon {
+    color: var(--success-color);
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.benefit-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.benefit-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* 原料配方样式 */
+.ingredients-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ingredients-summary {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ingredients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.ingredient-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.ingredient-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.ingredient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.ingredient-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+.ingredient-phase {
+    background: var(--info-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.ingredient-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.ingredient-amount {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.amount-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.amount-unit {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.ingredient-percentage {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.ingredient-progress .progress {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: #f1f5f9;
+}
+
+.ingredient-progress .progress-bar {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 0.25rem;
+}
+
+/* 制作步骤样式 */
+.steps-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.steps-timeline {
+    position: relative;
+}
+
+.steps-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    border-radius: 1px;
+}
+
+.step-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 3rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+.step-item:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+}
+
+.step-content {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.step-content:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.step-description p {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.step-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.step-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.step-notes .alert-sm {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* 章节标题样式 */
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .navbar, .breadcrumb, .btn, .footer {
+        display: none !important;
+    }
+    
+    .product-header-card, .ingredients-card, .steps-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .step-number {
+        background-color: #333 !important;
+    }
+    
+    .benefit-card {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .product-title {
+        font-size: 1.5rem;
+    }
+    
+    .product-header-content {
+        padding: 1.5rem;
+    }
+    
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ingredients-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .step-item {
+        padding-left: 2.5rem;
+    }
+    
+    .step-number {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+    }
+    
+    .steps-timeline::before {
+        left: 1rem;
+    }
+}
+</style>
+{% endblock %}
