@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category }} - 化妆品DIY配方库{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">首页</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('categories') }}">分类</a></li>
+        <li class="breadcrumb-item active">{{ category }}</li>
+    </ol>
+</nav>
+
+<!-- 分类标题 -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>
+            {% if category == '护肤品' %}
+            <i class="fas fa-leaf me-3 text-success"></i>
+            {% elif category == '面膜' %}
+            <i class="fas fa-spa me-3 text-info"></i>
+            {% elif category == '护发产品' %}
+            <i class="fas fa-cut me-3 text-warning"></i>
+            {% elif category == '精油' %}
+            <i class="fas fa-seedling me-3 text-primary"></i>
+            {% else %}
+            <i class="fas fa-vial me-3 text-secondary"></i>
+            {% endif %}
+            {{ category }}
+        </h1>
+        <p class="text-muted">共 {{ products|length }} 个配方</p>
+    </div>
+    <div>
+        <a href="{{ url_for('categories') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>返回分类
+        </a>
+    </div>
+</div>
+
+<!-- 分类描述 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                {% if category == '护肤品' %}
+                <h5><i class="fas fa-info-circle me-2"></i>关于护肤品</h5>
+                <p class="mb-0">护肤品是指用于面部和身体护理的化妆品，包括面霜、精华液、乳液、爽肤水等。这些产品能够清洁、保护、营养和美化肌肤，帮助维持肌肤的健康状态。</p>
+                {% elif category == '面膜' %}
+                <h5><i class="fas fa-info-circle me-2"></i>关于面膜</h5>
+                <p class="mb-0">面膜是一种敷在脸上的美容护肤品，具有深层清洁、保湿、美白、抗衰老等功效。根据功效和质地不同，可分为清洁面膜、保湿面膜、美白面膜、抗衰老面膜等。</p>
+                {% elif category == '护发产品' %}
+                <h5><i class="fas fa-info-circle me-2"></i>关于护发产品</h5>
+                <p class="mb-0">护发产品包括洗发水、护发素、发膜、护发精油等，用于清洁、滋养、保护和美化头发。这些产品能够改善头发的质地，增加光泽，预防头发损伤。</p>
+                {% elif category == '精油' %}
+                <h5><i class="fas fa-info-circle me-2"></i>关于精油</h5>
+                <p class="mb-0">精油是从植物中提取的挥发性芳香化合物，具有多种功效。在化妆品中，精油常用于提供香味、抗菌、舒缓、保湿等功能，是天然化妆品的重要成分。</p>
+                {% else %}
+                <h5><i class="fas fa-info-circle me-2"></i>关于{{ category }}</h5>
+                <p class="mb-0">这里收集了各种{{ category }}的DIY配方，帮助您制作天然、安全的化妆品。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 产品列表 -->
+{% if products %}
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 product-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                </div>
+                {% if product.description %}
+                <p class="card-text text-muted">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+                <div class="mt-auto">
+                    <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-eye me-1"></i>查看详情
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <small class="text-muted">
+                    <i class="fas fa-tag me-1"></i>{{ product.category }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">该分类暂无配方</h4>
+    <p class="text-muted">我们正在努力添加更多{{ category }}配方，敬请期待！</p>
+    <a href="{{ url_for('categories') }}" class="btn btn-primary">
+        <i class="fas fa-th-large me-2"></i>查看其他分类
+    </a>
+</div>
+{% endif %}
+
+<!-- 相关推荐 -->
+{% if products %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb me-2"></i>制作小贴士</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h6>选择优质原料</h6>
+                                <small class="text-muted">使用高质量的天然原料，确保产品的安全性和有效性。</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-thermometer-half fa-2x text-warning me-3"></i>
+                            <div>
+                                <h6>控制制作温度</h6>
+                                <small class="text-muted">严格按照配方要求的温度进行制作，避免过热破坏有效成分。</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-shield-alt fa-2x text-info me-3"></i>
+                            <div>
+                                <h6>注意卫生安全</h6>
+                                <small class="text-muted">保持制作环境清洁，使用干净的容器和工具。</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 产品卡片动画效果
+document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.product-card');
+    
+    productCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+// 产品卡片悬停效果
+document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.product-card');
+    
+    productCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        });
+    });
+});
+</script>
+
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %}
