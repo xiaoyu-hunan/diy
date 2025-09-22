@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 化妆品DIY配方库{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<div class="hero-section">
+    <div class="search-box text-center position-relative">
+        <div class="hero-content">
+            <h1 class="display-3 mb-4 fw-bold">
+                <i class="fas fa-seedling me-3"></i>化妆品DIY配方库
+            </h1>
+            <p class="lead mb-4 fs-5">探索天然护肤的奥秘，制作属于你的专属美容产品</p>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                        <div class="input-group input-group-lg">
+                            <input type="text" class="form-control" name="q" 
+                                   placeholder="搜索配方名称、成分或功效..." 
+                                   value="{{ request.args.get('q', '') }}"
+                                   autocomplete="off">
+                            <button class="btn btn-light" type="submit">
+                                <i class="fas fa-search me-2"></i>搜索
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- 快速搜索标签 -->
+            <div class="quick-search-tags mt-4">
+                <span class="text-white-50 me-2">热门搜索：</span>
+                <a href="{{ url_for('search', q='保湿') }}" class="badge bg-light text-dark me-2 mb-2">保湿</a>
+                <a href="{{ url_for('search', q='祛痘') }}" class="badge bg-light text-dark me-2 mb-2">祛痘</a>
+                <a href="{{ url_for('search', q='美白') }}" class="badge bg-light text-dark me-2 mb-2">美白</a>
+                <a href="{{ url_for('search', q='面膜') }}" class="badge bg-light text-dark me-2 mb-2">面膜</a>
+                <a href="{{ url_for('search', q='精油') }}" class="badge bg-light text-dark me-2 mb-2">精油</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+<div class="stats-section mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon">
+                    <i class="fas fa-vial"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">{{ products|length }}</h3>
+                    <p class="stats-label">配方总数</p>
+                    <small class="stats-desc">精心挑选的DIY配方</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">100%</h3>
+                    <p class="stats-label">天然成分</p>
+                    <small class="stats-desc">纯天然无添加</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stats-content">
+                    <h3 class="stats-number">4.9/5</h3>
+                    <p class="stats-label">用户评分</p>
+                    <small class="stats-desc">用户满意度极高</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分类快速导航 -->
+<div class="categories-section mb-5">
+    <div class="section-header text-center mb-4">
+        <h2 class="section-title">
+            <i class="fas fa-th-large me-2"></i>快速分类
+        </h2>
+        <p class="section-subtitle">按类别浏览我们的配方库</p>
+    </div>
+    <div class="row g-3">
+        {% set categories = products|map(attribute='category')|unique|list %}
+        {% for category in categories %}
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('category_products', category=category) }}" 
+               class="category-card-link">
+                <div class="category-card">
+                    <div class="category-icon">
+                        {% if category == '护肤品' %}
+                        <i class="fas fa-leaf"></i>
+                        {% elif category == '面膜' %}
+                        <i class="fas fa-spa"></i>
+                        {% elif category == '护发产品' %}
+                        <i class="fas fa-cut"></i>
+                        {% elif category == '精油' %}
+                        <i class="fas fa-seedling"></i>
+                        {% else %}
+                        <i class="fas fa-vial"></i>
+                        {% endif %}
+                    </div>
+                    <div class="category-info">
+                        <h5 class="category-name">{{ category }}</h5>
+                        <span class="category-count">
+                            {{ products|selectattr('category', 'equalto', category)|list|length }} 个配方
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 产品列表 -->
+<div class="products-section">
+    <div class="section-header text-center mb-4">
+        <h2 class="section-title">
+            <i class="fas fa-list me-2"></i>精选配方
+        </h2>
+        <p class="section-subtitle">发现最适合你的DIY配方</p>
+    </div>
+
+    {% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4">
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-badge">{{ product.category }}</div>
+                    <div class="product-favorite">
+                        <i class="far fa-heart"></i>
+                    </div>
+                </div>
+                <div class="product-content">
+                    <h5 class="product-title">{{ product.name }}</h5>
+                    {% if product.description %}
+                    <p class="product-description">
+                        {{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}
+                    </p>
+                    {% endif %}
+                    <div class="product-actions">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-eye me-1"></i>查看详情
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="shareProduct({{ product.id }})">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state text-center py-5">
+        <div class="empty-icon mb-4">
+            <i class="fas fa-inbox fa-4x text-muted"></i>
+        </div>
+        <h4 class="empty-title">暂无配方数据</h4>
+        <p class="empty-description">请先运行数据提取脚本来导入配方数据。</p>
+        <button class="btn btn-primary" onclick="alert('请运行 extract_pdf_data.py 脚本导入数据')">
+            <i class="fas fa-upload me-2"></i>导入数据
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 特色推荐 -->
+<div class="featured-section mt-5">
+    <div class="section-header text-center mb-4">
+        <h2 class="section-title">
+            <i class="fas fa-fire me-2"></i>热门推荐
+        </h2>
+        <p class="section-subtitle">精选最受欢迎的配方</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="featured-card featured-popular">
+                <div class="featured-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="featured-content">
+                    <h5 class="featured-title">最受欢迎</h5>
+                    <p class="featured-subtitle">薰衣草保湿面霜</p>
+                    <p class="featured-description">适合干性皮肤，深层滋润</p>
+                    <div class="featured-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span class="ms-2">4.9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="featured-card featured-natural">
+                <div class="featured-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="featured-content">
+                    <h5 class="featured-title">天然成分</h5>
+                    <p class="featured-subtitle">茶树精油祛痘凝胶</p>
+                    <p class="featured-description">抗菌消炎，温和有效</p>
+                    <div class="featured-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span class="ms-2">4.8</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="featured-card featured-beginner">
+                <div class="featured-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="featured-content">
+                    <h5 class="featured-title">新手上路</h5>
+                    <p class="featured-subtitle">简单易做的配方</p>
+                    <p class="featured-description">适合初学者尝试</p>
+                    <div class="featured-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span class="ms-2">4.7</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function shareProduct(productId) {
+    if (navigator.share) {
+        navigator.share({
+            title: '化妆品DIY配方',
+            text: '查看这个有趣的DIY配方！',
+            url: window.location.origin + '/product/' + productId
+        });
+    } else {
+        // 降级方案：复制链接
+        const url = window.location.origin + '/product/' + productId;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('链接已复制到剪贴板！');
+        });
+    }
+}
+
+// 收藏功能
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteButtons = document.querySelectorAll('.product-favorite');
+    
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.style.color = '#e74c3c';
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.style.color = '';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+/* 首页特定样式 */
+.hero-section {
+    margin-bottom: 3rem;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.quick-search-tags .badge {
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.quick-search-tags .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* 统计卡片样式 */
+.stats-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stats-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stats-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stats-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* 分类卡片样式 */
+.category-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.category-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: inherit;
+}
+
+.category-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--info-color), var(--success-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.category-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.category-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* 产品卡片样式 */
+.product-card {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.product-header {
+    position: relative;
+    padding: 1rem 1rem 0.5rem;
+}
+
+.product-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.product-favorite {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.product-favorite:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.product-content {
+    padding: 1rem;
+}
+
+.product-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.product-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.product-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 特色推荐卡片样式 */
+.featured-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.featured-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.featured-popular::before {
+    background: linear-gradient(90deg, var(--warning-color), #f97316);
+}
+
+.featured-natural::before {
+    background: linear-gradient(90deg, var(--success-color), #059669);
+}
+
+.featured-beginner::before {
+    background: linear-gradient(90deg, var(--info-color), #0891b2);
+}
+
+.featured-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.featured-popular .featured-icon {
+    background: linear-gradient(135deg, var(--warning-color), #f97316);
+}
+
+.featured-natural .featured-icon {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+}
+
+.featured-beginner .featured-icon {
+    background: linear-gradient(135deg, var(--info-color), #0891b2);
+}
+
+.featured-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.featured-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.featured-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.featured-rating {
+    color: var(--warning-color);
+    font-size: 0.9rem;
+}
+
+/* 空状态样式 */
+.empty-state {
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+.empty-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.empty-description {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* 章节标题样式 */
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .stats-card {
+        padding: 1.5rem;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+    }
+    
+    .featured-card {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
